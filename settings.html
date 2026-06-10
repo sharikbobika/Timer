@@ -1,0 +1,412 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Settings Menu</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: #1e1e1e;
+            font-family: Arial, sans-serif;
+            min-height: 100vh;
+        }
+
+        .settings {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            z-index: 1000;
+        }
+
+        .gear {
+            width: 48px;
+            height: 48px;
+            cursor: pointer;
+            display: block;
+            user-select: none;
+            transition: all 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
+            filter: drop-shadow(0 0 8px rgba(255, 255, 255, 0.1));
+        }
+
+        .gear:hover {
+            transform: rotate(90deg) scale(1.1);
+            filter: drop-shadow(0 0 16px rgba(0, 242, 254, 0.4));
+        }
+
+        .gear.active {
+            animation: spin 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+
+        @keyframes spin {
+            from {
+                transform: rotate(0deg) scale(1);
+            }
+            to {
+                transform: rotate(360deg) scale(1.1);
+            }
+        }
+
+        .menu {
+            position: absolute;
+            top: 58px;
+            right: 0;
+            width: 240px;
+            background: rgba(42, 42, 42, 0.95);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.4);
+
+            opacity: 0;
+            visibility: hidden;
+            transform: translateY(-20px) scale(0.9);
+
+            transition:
+                opacity 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                transform 0.3s cubic-bezier(0.34, 1.56, 0.64, 1),
+                visibility 0.3s;
+        }
+
+        .menu.show {
+            opacity: 1;
+            visibility: visible;
+            transform: translateY(0) scale(1);
+        }
+
+        .menu-section {
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 8px 0;
+        }
+
+        .menu-section:last-child {
+            border-bottom: none;
+        }
+
+        .menu-title {
+            color: #888;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            padding: 12px 16px 8px;
+            letter-spacing: 1px;
+        }
+
+        .menu button {
+            width: 100%;
+            border: none;
+            background: none;
+            color: #ffffff;
+            padding: 12px 16px;
+            text-align: left;
+            cursor: pointer;
+            font-size: 14px;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .menu button:hover {
+            background: rgba(0, 242, 254, 0.1);
+            color: #00f2fe;
+            padding-left: 20px;
+        }
+
+        .menu button:active {
+            background: rgba(0, 242, 254, 0.2);
+        }
+
+        .menu button::before {
+            content: '';
+            width: 4px;
+            height: 4px;
+            background: #00f2fe;
+            border-radius: 50%;
+            opacity: 0;
+            transition: opacity 0.2s ease;
+        }
+
+        .menu button:hover::before {
+            opacity: 1;
+        }
+
+        .language-section {
+            padding: 12px 16px;
+            border-top: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .language-label {
+            color: #888;
+            font-size: 11px;
+            font-weight: bold;
+            text-transform: uppercase;
+            display: block;
+            margin-bottom: 8px;
+            letter-spacing: 1px;
+        }
+
+        .language-buttons {
+            display: flex;
+            gap: 8px;
+        }
+
+        .lang-btn {
+            flex: 1;
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            background: transparent;
+            color: #ffffff;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: bold;
+            transition: all 0.2s ease;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+
+        .lang-btn:hover {
+            border-color: #00f2fe;
+            color: #00f2fe;
+            background: rgba(0, 242, 254, 0.1);
+        }
+
+        .lang-btn.active {
+            background: #00f2fe;
+            color: #1e1e1e;
+            border-color: #00f2fe;
+            box-shadow: 0 0 12px rgba(0, 242, 254, 0.4);
+        }
+
+        /* Divider animation */
+        .divider {
+            width: 100%;
+            height: 1px;
+            background: linear-gradient(
+                90deg,
+                transparent,
+                rgba(0, 242, 254, 0.3),
+                transparent
+            );
+            margin: 8px 0;
+        }
+
+        /* Ripple effect on click */
+        @keyframes ripple {
+            0% {
+                transform: scale(0);
+                opacity: 1;
+            }
+            100% {
+                transform: scale(4);
+                opacity: 0;
+            }
+        }
+
+        .ripple {
+            position: absolute;
+            border-radius: 50%;
+            background: rgba(0, 242, 254, 0.3);
+            transform: scale(0);
+            pointer-events: none;
+        }
+
+        /* Tooltip */
+        .tooltip {
+            position: absolute;
+            background: rgba(0, 0, 0, 0.8);
+            color: #00f2fe;
+            padding: 6px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            white-space: nowrap;
+            pointer-events: none;
+            opacity: 0;
+            transform: translateX(-50%) translateY(-40px);
+            transition: opacity 0.2s ease;
+            left: 24px;
+            top: 0;
+            z-index: 1001;
+        }
+
+        .menu:hover + .tooltip,
+        .tooltip:hover {
+            opacity: 1;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="settings">
+        <!-- SVG Gear Icon (no image needed) -->
+        <svg class="gear" id="gear" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+            <defs>
+                <style>
+                    .gear-svg {
+                        fill: none;
+                        stroke: #00f2fe;
+                        stroke-width: 3;
+                        stroke-linecap: round;
+                        stroke-linejoin: round;
+                    }
+                </style>
+            </defs>
+            <g class="gear-svg">
+                <!-- Outer gear teeth -->
+                <circle cx="50" cy="50" r="30" />
+                <!-- Center circle -->
+                <circle cx="50" cy="50" r="15" />
+                <!-- Gear teeth -->
+                <g>
+                    <rect x="48" y="12" width="4" height="8" />
+                    <rect x="48" y="80" width="4" height="8" />
+                    <rect x="12" y="48" width="8" height="4" />
+                    <rect x="80" y="48" width="8" height="4" />
+                    <rect x="22" y="22" width="6" height="6" />
+                    <rect x="72" y="72" width="6" height="6" />
+                    <rect x="72" y="22" width="6" height="6" />
+                    <rect x="22" y="72" width="6" height="6" />
+                </g>
+            </g>
+        </svg>
+
+        <div class="menu" id="menu">
+            <!-- Main Options -->
+            <div class="menu-section">
+                <div class="menu-title" data-en="Settings" data-ru="Параметры">Параметры</div>
+                <button onclick="handleMenuClick('profile')" data-en="Profile" data-ru="Профиль">
+                    <span>👤</span> <span data-en="Profile" data-ru="Профиль">Профиль</span>
+                </button>
+                <button onclick="handleMenuClick('settings')" data-en="Settings" data-ru="Настройки">
+                    <span>⚙️</span> <span data-en="Settings" data-ru="Настройки">Настройки</span>
+                </button>
+                <button onclick="handleMenuClick('notifications')" data-en="Notifications" data-ru="Уведомления">
+                    <span>🔔</span> <span data-en="Notifications" data-ru="Уведомления">Уведомления</span>
+                </button>
+                <button onclick="handleMenuClick('security')" data-en="Security" data-ru="Безопасность">
+                    <span>🔒</span> <span data-en="Security" data-ru="Безопасность">Безопасность</span>
+                </button>
+            </div>
+
+            <!-- Language Selection -->
+            <div class="language-section">
+                <label class="language-label" data-en="Language" data-ru="Язык">Язык</label>
+                <div class="language-buttons">
+                    <button class="lang-btn active" id="en-btn" onclick="setLanguage('en')" data-en="English" data-ru="English">
+                        EN
+                    </button>
+                    <button class="lang-btn" id="ru-btn" onclick="setLanguage('ru')" data-en="Русский" data-ru="Русский">
+                        РУ
+                    </button>
+                </div>
+            </div>
+
+            <!-- Logout -->
+            <div class="menu-section">
+                <button onclick="handleMenuClick('logout')" data-en="Logout" data-ru="Выход" style="color: #ff6b6b;">
+                    <span>🚪</span> <span data-en="Logout" data-ru="Выход">Выход</span>
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const gear = document.getElementById('gear');
+        const menu = document.getElementById('menu');
+        let currentLanguage = 'en';
+
+        // Toggle menu on gear click
+        gear.addEventListener('click', function (e) {
+            e.stopPropagation();
+            menu.classList.toggle('show');
+            gear.classList.toggle('active');
+        });
+
+        // Close menu when clicking outside
+        document.addEventListener('click', function () {
+            menu.classList.remove('show');
+            gear.classList.remove('active');
+        });
+
+        // Prevent menu from closing when clicking inside it
+        menu.addEventListener('click', function (e) {
+            e.stopPropagation();
+        });
+
+        // Handle menu item clicks
+        function handleMenuClick(action) {
+            const messages = {
+                en: {
+                    profile: 'Opening Profile...',
+                    settings: 'Opening Settings...',
+                    notifications: 'Opening Notifications...',
+                    security: 'Opening Security...',
+                    logout: 'Logging out...'
+                },
+                ru: {
+                    profile: 'Открытие Профиля...',
+                    settings: 'Открытие Настроек...',
+                    notifications: 'Открытие Уведомлений...',
+                    security: 'Открытие Безопасности...',
+                    logout: 'Выход...'
+                }
+            };
+
+            const message = messages[currentLanguage][action];
+            alert(message);
+            menu.classList.remove('show');
+            gear.classList.remove('active');
+        }
+
+        // Change language
+        function setLanguage(lang) {
+            currentLanguage = lang;
+
+            // Update all text elements with data-en and data-ru
+            document.querySelectorAll('[data-en][data-ru]').forEach(el => {
+                el.textContent = el.getAttribute(`data-${lang}`);
+            });
+
+            // Update language buttons styling
+            document.getElementById('en-btn').classList.toggle('active', lang === 'en');
+            document.getElementById('ru-btn').classList.toggle('active', lang === 'ru');
+
+            // Save preference
+            localStorage.setItem('language', lang);
+
+            // Update HTML lang attribute
+            document.documentElement.lang = lang;
+        }
+
+        // Load saved language preference
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedLanguage = localStorage.getItem('language') || 'en';
+            setLanguage(savedLanguage);
+        });
+
+        // Hover animation for gear
+        gear.addEventListener('mouseenter', function () {
+            if (!menu.classList.contains('show')) {
+                this.style.transform = 'rotate(45deg) scale(1.05)';
+            }
+        });
+
+        gear.addEventListener('mouseleave', function () {
+            if (!menu.classList.contains('show')) {
+                this.style.transform = 'rotate(0deg) scale(1)';
+            }
+        });
+    </script>
+
+</body>
+
+</html>
