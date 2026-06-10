@@ -35,6 +35,8 @@ Ensure you have Python installed on your system. You can verify this by running 
 
 Created by Bobik.
 
+Or website: https://sharikbobika.pythonanywhere.com/
+
 
 ru-RU
 
@@ -70,5 +72,5 @@ python app.py
 
 Требования
 Убедитесь, что на вашем компьютере установлен Python. Проверить это можно, выполнив команду python --version в терминале.
-
+или вебсайт https://sharikbobika.pythonanywhere.com/
 Создано разработчиком Bobik.
