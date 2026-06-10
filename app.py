@@ -60,11 +60,14 @@ ACHIEVEMENTS = {
 }
 
 def init_session_achievements():
-    """Инициализируем достижения в сессии пользователя"""
+    """Инициализируем достижения и настройки в сессии пользователя"""
     if 'achievements' not in session:
         session['achievements'] = []
         session['pause_count'] = 0
         session['timer_completed_without_pause'] = False
+        session['theme'] = 'dark'
+        session['sound'] = 'on'
+        session['language'] = 'en'
 
 @app.before_request
 def before_request():
@@ -188,6 +191,46 @@ def timer_reset():
     session['timer_completed_without_pause'] = False
     session.modified = True
     return jsonify({'success': True})
+
+@app.route('/api/settings', methods=['GET'])
+def get_settings():
+    """Получить текущие настройки"""
+    return jsonify({
+        'theme': session.get('theme', 'dark'),
+        'sound': session.get('sound', 'on'),
+        'language': session.get('language', 'en')
+    })
+
+@app.route('/api/settings', methods=['POST'])
+def update_settings():
+    """Обновить настройки"""
+    data = request.json
+    
+    if 'theme' in data:
+        session['theme'] = data['theme']
+    if 'sound' in data:
+        session['sound'] = data['sound']
+    if 'language' in data:
+        session['language'] = data['language']
+    
+    session.modified = True
+    
+    return jsonify({
+        'success': True,
+        'theme': session.get('theme'),
+        'sound': session.get('sound'),
+        'language': session.get('language')
+    })
+
+@app.route('/api/profile', methods=['GET'])
+def get_profile():
+    """Получить информацию профиля (без login)"""
+    unlocked = session.get('achievements', [])
+    return jsonify({
+        'achievements_count': len(unlocked),
+        'total_achievements': len(ACHIEVEMENTS),
+        'session_id': 'Anonymous User'
+    })
 
 if __name__ == '__main__':
     app.run(debug=True)
