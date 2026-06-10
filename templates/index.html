@@ -1,0 +1,964 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>BobikDev Interactive Timer</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            background: radial-gradient(circle at center, #1a1c29 0%, #0e1017 100%);
+            color: #fff;
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        h1 {
+            font-size: 2.5rem;
+            font-weight: 800;
+            margin-bottom: 2rem;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            background: linear-gradient(45deg, #00f2fe, #4facfe);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            text-shadow: 0 0 30px rgba(0, 242, 254, 0.3);
+            text-align: center;
+        }
+
+        .header-controls {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+        }
+
+        .settings-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #fff;
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+        }
+
+        .settings-btn:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: #00f2fe;
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
+        }
+
+        .achievements-btn {
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #FFD700;
+            width: 45px;
+            height: 45px;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .achievements-btn:hover {
+            background: rgba(255, 215, 0, 0.1);
+            border-color: #FFD700;
+            box-shadow: 0 0 15px rgba(255, 215, 0, 0.2);
+        }
+
+        .achievement-counter {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: #FF6B6B;
+            color: white;
+            border-radius: 50%;
+            width: 20px;
+            height: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.7rem;
+            font-weight: bold;
+        }
+
+        .setup-panel {
+            background: rgba(255, 255, 255, 0.03);
+            padding: 20px;
+            border-radius: 16px;
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            margin-bottom: 2rem;
+            display: flex;
+            gap: 15px;
+            align-items: center;
+            flex-wrap: wrap;
+            justify-content: center;
+            backdrop-filter: blur(10px);
+        }
+
+        .setup-panel label {
+            font-size: 0.9rem;
+            color: #6c7a9c;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .setup-panel input[type="datetime-local"] {
+            background: #11141d;
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            padding: 10px 15px;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 1rem;
+            outline: none;
+            transition: 0.3s;
+        }
+
+        .setup-panel input[type="datetime-local"]:focus {
+            border-color: #00f2fe;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+        }
+
+        .timer-container {
+            display: flex;
+            gap: 20px;
+            padding: 40px;
+            background: rgba(255, 255, 255, 0.02);
+            border-radius: 24px;
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            box-shadow: 0 30px 60px rgba(0, 0, 0, 0.6);
+            margin-bottom: 2rem;
+        }
+
+        .time-block {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            width: 130px;
+        }
+
+        .number-box {
+            position: relative;
+            background: linear-gradient(180deg, #161923 0%, #0b0d13 100%);
+            width: 100%;
+            height: 110px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 4rem;
+            font-weight: 900;
+            border-radius: 16px;
+            color: #00f2fe;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.4), 0 0 20px rgba(0, 242, 254, 0.1);
+            border: 1px solid rgba(0, 242, 254, 0.2);
+            overflow: hidden;
+        }
+
+        .number-box::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 50%;
+            background: linear-gradient(rgba(255, 255, 255, 0.05), rgba(255, 255, 255, 0));
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+        }
+
+        .label {
+            margin-top: 12px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+            color: #6c7a9c;
+        }
+
+        .controls {
+            display: flex;
+            gap: 15px;
+        }
+
+        .btn {
+            background: #161923;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 12px 28px;
+            font-size: 0.9rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #fff;
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.25s ease;
+            outline: none;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+        }
+
+        .btn-start {
+            border-color: #00ff87;
+            color: #00ff87;
+        }
+
+        .btn-start:hover {
+            background: rgba(0, 255, 135, 0.1);
+            box-shadow: 0 0 15px rgba(0, 255, 135, 0.2);
+        }
+
+        .btn-pause {
+            border-color: #ffb800;
+            color: #ffb800;
+        }
+
+        .btn-pause:hover {
+            background: rgba(255, 184, 0, 0.1);
+            box-shadow: 0 0 15px rgba(255, 184, 0, 0.2);
+        }
+
+        .btn-reset {
+            border-color: #ff4a4a;
+            color: #ff4a4a;
+        }
+
+        .btn-reset:hover {
+            background: rgba(255, 74, 74, 0.1);
+            box-shadow: 0 0 15px rgba(255, 74, 74, 0.2);
+        }
+
+        .flip {
+            animation: smoothPop 0.35s cubic-bezier(0.25, 1, 0.5, 1);
+            will-change: transform, opacity;
+        }
+
+        @keyframes smoothPop {
+            0% {
+                transform: scale(0.92);
+                opacity: 0.6;
+            }
+
+            100% {
+                transform: scale(1);
+                opacity: 1;
+            }
+        }
+
+        .paused {
+            color: #ffb800 !important;
+            border-color: rgba(255, 184, 0, 0.3) !important;
+            box-shadow: 0 0 20px rgba(255, 184, 0, 0.1) !important;
+        }
+
+        /* Achievement Notification - Minecraft Style */
+        .achievement-notification {
+            position: fixed;
+            top: 30px;
+            right: 30px;
+            background: rgba(0, 0, 0, 0.9);
+            border: 2px solid #8b7355;
+            border-radius: 0;
+            padding: 12px 16px;
+            max-width: 320px;
+            font-family: 'Courier New', monospace;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.8);
+            animation: slideInRight 0.5s ease;
+            z-index: 9999;
+        }
+
+        @keyframes slideInRight {
+            from {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+
+            to {
+                transform: translateX(0);
+                opacity: 1;
+            }
+        }
+
+        @keyframes slideOutRight {
+            from {
+                transform: translateX(0);
+                opacity: 1;
+            }
+
+            to {
+                transform: translateX(400px);
+                opacity: 0;
+            }
+        }
+
+        .achievement-notification.hide {
+            animation: slideOutRight 0.5s ease forwards;
+        }
+
+        .achievement-icon {
+            display: inline-block;
+            width: 32px;
+            height: 32px;
+            background: #8b7355;
+            border: 2px solid #654321;
+            margin-right: 10px;
+            font-size: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            vertical-align: middle;
+        }
+
+        .achievement-text {
+            display: inline-block;
+            vertical-align: middle;
+        }
+
+        .achievement-title {
+            color: #ffff00;
+            font-size: 0.9rem;
+            font-weight: bold;
+            display: block;
+        }
+
+        .achievement-description {
+            color: #ffffff;
+            font-size: 0.75rem;
+            display: block;
+            margin-top: 2px;
+        }
+
+        /* Modal - Achievements Gallery */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 9998;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.6);
+            animation: fadeIn 0.3s ease;
+        }
+
+        .modal.show {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+            }
+
+            to {
+                opacity: 1;
+            }
+        }
+
+        .modal-content {
+            background: rgba(26, 28, 41, 0.95);
+            padding: 30px;
+            border-radius: 16px;
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            max-width: 500px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+            backdrop-filter: blur(10px);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .modal-header h2 {
+            color: #00f2fe;
+            font-size: 1.5rem;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            color: #00f2fe;
+            font-size: 2rem;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .close-btn:hover {
+            color: #fff;
+        }
+
+        .achievements-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 15px;
+        }
+
+        .achievement-card {
+            background: rgba(255, 255, 255, 0.05);
+            border: 2px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 15px;
+            text-align: center;
+            transition: all 0.3s ease;
+            cursor: default;
+        }
+
+        .achievement-card.unlocked {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(0, 242, 254, 0.5);
+            box-shadow: 0 0 15px rgba(0, 242, 254, 0.2);
+        }
+
+        .achievement-card.locked {
+            opacity: 0.5;
+        }
+
+        .achievement-card-icon {
+            font-size: 3rem;
+            margin-bottom: 10px;
+            filter: grayscale(100%);
+            transition: 0.3s;
+        }
+
+        .achievement-card.unlocked .achievement-card-icon {
+            filter: grayscale(0%);
+        }
+
+        .achievement-card-title {
+            font-weight: bold;
+            margin-bottom: 5px;
+            font-size: 0.95rem;
+        }
+
+        .achievement-card-desc {
+            font-size: 0.75rem;
+            color: #aaa;
+        }
+
+        .achievement-card-status {
+            margin-top: 10px;
+            font-size: 0.7rem;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .achievement-card.unlocked .achievement-card-status {
+            color: #00ff87;
+        }
+
+        .achievement-card.locked .achievement-card-status {
+            color: #666;
+        }
+
+        /* Settings Modal */
+        .settings-form {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .form-group label {
+            color: #6c7a9c;
+            text-transform: uppercase;
+            font-size: 0.85rem;
+            letter-spacing: 1px;
+        }
+
+        .form-group input,
+        .form-group select {
+            background: #11141d;
+            border: 1px solid rgba(0, 242, 254, 0.3);
+            padding: 10px 12px;
+            border-radius: 8px;
+            color: #fff;
+            font-size: 0.95rem;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
+            border-color: #00f2fe;
+            box-shadow: 0 0 10px rgba(0, 242, 254, 0.3);
+            outline: none;
+        }
+
+        /* Media Queries */
+        @media (max-width: 680px) {
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .timer-container {
+                gap: 10px;
+                padding: 20px;
+            }
+
+            .time-block {
+                width: 70px;
+            }
+
+            .number-box {
+                height: 75px;
+                font-size: 2.2rem;
+            }
+
+            .label {
+                font-size: 0.6rem;
+            }
+
+            .btn {
+                padding: 10px 18px;
+                font-size: 0.8rem;
+            }
+
+            .header-controls {
+                top: 10px;
+                right: 10px;
+                gap: 10px;
+            }
+
+            .settings-btn,
+            .achievements-btn {
+                width: 40px;
+                height: 40px;
+                font-size: 1rem;
+            }
+
+            .achievement-notification {
+                top: 15px;
+                right: 15px;
+                max-width: 280px;
+                padding: 10px 12px;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="header-controls">
+        <button class="achievements-btn" id="achievements-btn">
+            🏆
+            <span class="achievement-counter" id="achievement-counter">0</span>
+        </button>
+        <button class="settings-btn" id="settings-btn">⚙️</button>
+    </div>
+
+    <h1 id="main-title">Установите таймер</h1>
+
+    <div class="setup-panel">
+        <label for="datetime-input">Цель:</label>
+        <input type="datetime-local" id="datetime-input">
+    </div>
+
+    <div class="timer-container">
+        <div class="time-block">
+            <div class="number-box" id="days">00</div>
+            <div class="label">Дней</div>
+        </div>
+        <div class="time-block">
+            <div class="number-box" id="hours">00</div>
+            <div class="label">Часов</div>
+        </div>
+        <div class="time-block">
+            <div class="number-box" id="minutes">00</div>
+            <div class="label">Минут</div>
+        </div>
+        <div class="time-block">
+            <div class="number-box" id="seconds">00</div>
+            <div class="label">Секунд</div>
+        </div>
+    </div>
+
+    <div class="controls">
+        <button class="btn btn-start" id="start-btn">Старт</button>
+        <button class="btn btn-pause" id="pause-btn">Пауза</button>
+        <button class="btn btn-reset" id="reset-btn">Сброс</button>
+    </div>
+
+    <!-- Achievements Modal -->
+    <div class="modal" id="achievements-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🏆 Достижения</h2>
+                <button class="close-btn" id="close-achievements">&times;</button>
+            </div>
+            <div class="achievements-grid" id="achievements-grid"></div>
+        </div>
+    </div>
+
+    <!-- Settings Modal -->
+    <div class="modal" id="settings-modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>⚙️ Настройки</h2>
+                <button class="close-btn" id="close-settings">&times;</button>
+            </div>
+            <form class="settings-form" id="settings-form">
+                <div class="form-group">
+                    <label for="theme-select">Тема:</label>
+                    <select id="theme-select">
+                        <option value="dark">Тёмная</option>
+                        <option value="light">Светлая</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="sound-toggle">Звуковые эффекты:</label>
+                    <select id="sound-toggle">
+                        <option value="on">Включены</option>
+                        <option value="off">Отключены</option>
+                    </select>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <script>
+        const dateInput = document.getElementById('datetime-input');
+        const title = document.getElementById('main-title');
+        const startBtn = document.getElementById('start-btn');
+        const pauseBtn = document.getElementById('pause-btn');
+        const resetBtn = document.getElementById('reset-btn');
+        const boxes = document.querySelectorAll('.number-box');
+
+        const achievementsBtn = document.getElementById('achievements-btn');
+        const settingsBtn = document.getElementById('settings-btn');
+        const achievementsModal = document.getElementById('achievements-modal');
+        const settingsModal = document.getElementById('settings-modal');
+        const closeAchievements = document.getElementById('close-achievements');
+        const closeSettings = document.getElementById('close-settings');
+        const achievementCounter = document.getElementById('achievement-counter');
+        const achievementsGrid = document.getElementById('achievements-grid');
+
+        let countdownInterval = null;
+        let targetTime = null;
+        let timeLeftWhenPaused = null;
+        let isPaused = false;
+        let achievements = [];
+
+        window.addEventListener('DOMContentLoaded', () => {
+            const savedTarget = localStorage.getItem('timer_target');
+            const savedPausedTime = localStorage.getItem('timer_paused_time');
+            const savedIsPaused = localStorage.getItem('timer_is_paused');
+
+            if (savedTarget) {
+                targetTime = parseInt(savedTarget);
+                const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+                dateInput.value = (new Date(targetTime - tzoffset)).toISOString().slice(0, 16);
+
+                if (savedPausedTime) {
+                    timeLeftWhenPaused = parseInt(savedPausedTime);
+                }
+
+                if (savedIsPaused === 'true') {
+                    isPaused = true;
+                    toggleVisualPause(true);
+                    title.innerText = "Таймер на паузе";
+                    renderTime(timeLeftWhenPaused);
+                } else {
+                    startTimer();
+                }
+            } else {
+                title.innerText = "Установите таймер";
+                renderTime(0);
+            }
+
+            loadAchievements();
+        });
+
+        // Load achievements from server
+        async function loadAchievements() {
+            try {
+                const response = await fetch('/api/achievements');
+                const data = await response.json();
+                achievements = data.achievements;
+                achievementCounter.textContent = data.total_unlocked;
+                renderAchievementsGrid();
+            } catch (e) {
+                console.error('Failed to load achievements:', e);
+            }
+        }
+
+        // Render achievements grid
+        function renderAchievementsGrid() {
+            achievementsGrid.innerHTML = '';
+            achievements.forEach(ach => {
+                const card = document.createElement('div');
+                card.className = `achievement-card ${ach.unlocked ? 'unlocked' : 'locked'}`;
+                card.innerHTML = `
+                    <div class="achievement-card-icon">${ach.icon}</div>
+                    <div class="achievement-card-title">${ach.title}</div>
+                    <div class="achievement-card-desc">${ach.description}</div>
+                    <div class="achievement-card-status">${ach.unlocked ? '✓ Получено' : '🔒 Заблокировано'}</div>
+                `;
+                achievementsGrid.appendChild(card);
+            });
+        }
+
+        // Show achievement notification
+        function showAchievementNotification(achievement) {
+            const notif = document.createElement('div');
+            notif.className = 'achievement-notification';
+            notif.innerHTML = `
+                <div class="achievement-icon">${achievement.icon}</div>
+                <div class="achievement-text">
+                    <span class="achievement-title">${achievement.title}</span>
+                    <span class="achievement-description">${achievement.description}</span>
+                </div>
+            `;
+            document.body.appendChild(notif);
+
+            setTimeout(() => {
+                notif.classList.add('hide');
+                setTimeout(() => notif.remove(), 500);
+            }, 3000);
+        }
+
+        // Unlock achievement
+        async function unlockAchievement(achievementId) {
+            try {
+                const response = await fetch('/api/unlock-achievement', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ id: achievementId })
+                });
+                const data = await response.json();
+
+                if (data.unlocked) {
+                    showAchievementNotification(data.achievement);
+
+                    // Check for bonus unlock
+                    if (data.bonus_unlock) {
+                        const bonusAch = achievements.find(a => a.id === data.bonus_unlock);
+                        if (bonusAch) {
+                            setTimeout(() => showAchievementNotification(bonusAch), 1500);
+                        }
+                    }
+
+                    loadAchievements();
+                }
+            } catch (e) {
+                console.error('Failed to unlock achievement:', e);
+            }
+        }
+
+        // Modal controls
+        achievementsBtn.addEventListener('click', () => {
+            achievementsModal.classList.add('show');
+        });
+
+        settingsBtn.addEventListener('click', () => {
+            settingsModal.classList.add('show');
+        });
+
+        closeAchievements.addEventListener('click', () => {
+            achievementsModal.classList.remove('show');
+        });
+
+        closeSettings.addEventListener('click', () => {
+            settingsModal.classList.remove('show');
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === achievementsModal) {
+                achievementsModal.classList.remove('show');
+            }
+            if (e.target === settingsModal) {
+                settingsModal.classList.remove('show');
+            }
+        });
+
+        function saveState() {
+            if (targetTime) {
+                localStorage.setItem('timer_target', targetTime);
+                localStorage.setItem('timer_paused_time', timeLeftWhenPaused || '');
+                localStorage.setItem('timer_is_paused', isPaused);
+            } else {
+                localStorage.clear();
+            }
+        }
+
+        dateInput.addEventListener('change', () => {
+            const selectedDate = new Date(dateInput.value).getTime();
+            if (!isNaN(selectedDate)) {
+                targetTime = selectedDate;
+                isPaused = false;
+                timeLeftWhenPaused = null;
+                toggleVisualPause(false);
+                saveState();
+
+                // Send to backend
+                fetch('/api/timer-started', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        target_time: selectedDate - new Date().getTime()
+                    })
+                }).then(r => r.json()).then(data => {
+                    data.new_achievements.forEach(ach => unlockAchievement(ach));
+                });
+
+                startTimer();
+            }
+        });
+
+        function startTimer() {
+            if (!targetTime) return;
+
+            clearInterval(countdownInterval);
+            isPaused = false;
+            toggleVisualPause(false);
+            title.innerText = "Обратный отсчет";
+
+            if (timeLeftWhenPaused !== null) {
+                targetTime = new Date().getTime() + timeLeftWhenPaused;
+                timeLeftWhenPaused = null;
+                const tzoffset = (new Date()).getTimezoneOffset() * 60000;
+                dateInput.value = (new Date(targetTime - tzoffset)).toISOString().slice(0, 16);
+                saveState();
+            }
+
+            countdownInterval = setInterval(updateDisplay, 1000);
+            updateDisplay();
+        }
+
+        function pauseTimer() {
+            if (isPaused || !countdownInterval || !targetTime) return;
+            clearInterval(countdownInterval);
+            isPaused = true;
+
+            const now = new Date().getTime();
+            timeLeftWhenPaused = targetTime - now;
+            if (timeLeftWhenPaused < 0) timeLeftWhenPaused = 0;
+
+            toggleVisualPause(true);
+            title.innerText = "Таймер на паузе";
+            saveState();
+
+            // Send to backend
+            fetch('/api/timer-paused', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            }).then(r => r.json()).then(data => {
+                data.new_achievements.forEach(ach => unlockAchievement(ach));
+            });
+        }
+
+        function resetTimer() {
+            clearInterval(countdownInterval);
+            isPaused = false;
+            targetTime = null;
+            timeLeftWhenPaused = null;
+            toggleVisualPause(false);
+
+            dateInput.value = "";
+            title.innerText = "Установите таймер";
+
+            localStorage.removeItem('timer_target');
+            localStorage.removeItem('timer_paused_time');
+            localStorage.removeItem('timer_is_paused');
+
+            renderTime(0);
+
+            // Send to backend
+            fetch('/api/timer-reset', { method: 'POST' });
+        }
+
+        function updateDisplay() {
+            if (!targetTime) return;
+            const now = new Date().getTime();
+            const difference = targetTime - now;
+
+            if (difference <= 0) {
+                title.innerHTML = "🎉 ВРЕМЯ ИСТЕКЛО! 🎉";
+                renderTime(0);
+                clearInterval(countdownInterval);
+
+                // Send to backend
+                fetch('/api/timer-completed', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                }).then(r => r.json()).then(data => {
+                    data.new_achievements.forEach(ach => unlockAchievement(ach));
+                });
+
+                return;
+            }
+
+            renderTime(difference);
+        }
+
+        function renderTime(ms) {
+            const days = ms > 0 ? Math.floor(ms / (1000 * 60 * 60 * 24)) : 0;
+            const hours = ms > 0 ? Math.floor((ms % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60)) : 0;
+            const minutes = ms > 0 ? Math.floor((ms % (1000 * 60 * 60)) / (1000 * 60)) : 0;
+            const seconds = ms > 0 ? Math.floor((ms % (1000 * 60)) / 1000) : 0;
+
+            function setElementText(elementId, value) {
+                const element = document.getElementById(elementId);
+                const stringValue = value < 10 ? '0' + value : value.toString();
+
+                if (element.innerText !== stringValue) {
+                    element.innerText = stringValue;
+                    element.classList.remove('flip');
+                    void element.offsetWidth;
+                    element.classList.add('flip');
+                }
+            }
+
+            setElementText('days', days);
+            setElementText('hours', hours);
+            setElementText('minutes', minutes);
+            setElementText('seconds', seconds);
+        }
+
+        function toggleVisualPause(pauseOn) {
+            boxes.forEach(box => {
+                if (pauseOn) box.classList.add('paused');
+                else box.classList.remove('paused');
+            });
+        }
+
+        startBtn.addEventListener('click', startTimer);
+        pauseBtn.addEventListener('click', pauseTimer);
+        resetBtn.addEventListener('click', resetTimer);
+    </script>
+</body>
+
+</html>
